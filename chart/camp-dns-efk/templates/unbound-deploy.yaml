@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-unbound-deployment
+  labels:
+{{ include "camp-dns-efk.labels" . | indent 4 }}
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2019-08-31T23:23:03Z"
+  generation: 1
+spec:
+  replicas: {{ .Values.unbound.replicaCountMin }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: unbound
+{{ include "camp-dns-efk.labels" . | indent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: unbound
+{{ include "camp-dns-efk.labels" . | indent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.unbound.image.pullSecret }}
+      containers:
+        - name: unbound
+          image: {{ .Values.unbound.image.repository }}:{{ .Values.unbound.image.tag }}
+          imagePullPolicy: {{ .Values.unbound.image.pullPolicy }}
+          ports:
+            - name: dns-udp
+              containerPort: 53
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "1000m"
+          readinessProbe:
+            httpGet:
+              path: "/healthz"
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 1
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: "/healthz"
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          volumeMounts:
+            - name: unbound-conf
+              mountPath: "/opt/unbound/etc/unbound/"
+              readOnly: true
+            - name: rsyslogd-conf
+              mountPath: "/opt/rsyslogd/etc/"
+              readOnly: true
+        - name: healthz
+          image: googlecontainer/exechealthz:1.2
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-cmd=nslookup health.check.unbound. 127.0.0.1:53 > /dev/null"
+          ports:
+            - name: healthz
+              containerPort: 8080
+              protocol: TCP
+      volumes:
+        - name: unbound-conf
+          configMap:
+            name: {{ .Release.Name }}-unbound-configmap
+        - name: rsyslogd-conf
+          configMap:
+            name: {{ .Release.Name }}-rsyslogd-configmap

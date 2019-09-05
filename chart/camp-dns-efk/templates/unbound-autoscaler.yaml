@@ -1,0 +1,18 @@
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-unbound-autoscaler
+  labels:
+{{ include "camp-dns-efk.labels" . | indent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-unbound-deployment
+  minReplicas: {{ .Values.unbound.replicaCountMin }}
+  maxReplicas: {{ .Values.unbound.replicaCountMax }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.unbound.averageUtilization }}

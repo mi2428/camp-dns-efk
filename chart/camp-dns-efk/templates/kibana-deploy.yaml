@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-kibana-deployment
+  labels:
+{{ include "camp-dns-efk.labels" . | indent 4 }}
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2019-08-31T23:23:03Z"
+  generation: 1
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: kibana
+{{ include "camp-dns-efk.labels" . | indent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: kibana
+{{ include "camp-dns-efk.labels" . | indent 8 }}
+    spec:
+      initContainers:
+        - name: wait-for-es
+          image: mi2428/wait-for-it:latest
+          args: ["-q", "-t", "0", "{{ .Release.Name }}-elasticsearch:9200", "--", "sleep", "10"]
+      containers:
+        - name: kibana
+          image: {{ .Values.kibana.image.repository }}:{{ .Values.kibana.image.tag }}
+          imagePullPolicy: {{ .Values.kibana.image.pullPolicy }}
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: "http://{{ .Release.Name }}-elasticsearch:9200"
+            - name: SERVER_MAXPAYLOADBYTES
+              value: "4194304"
+            - name: LOGGING_DEST
+              value: "stdout"
+            - name: LOGGING_QUIET
+              value: "false"
+            - name: SERVER_HOST
+              value: "0.0.0.0"
+            - name: SERVER_PORT
+              value: "5601"
+          ports:
+            - name: http
+              containerPort: 5601
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: 5601
+            initialDelaySeconds: 180
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: 5601
+            initialDelaySeconds: 180
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3

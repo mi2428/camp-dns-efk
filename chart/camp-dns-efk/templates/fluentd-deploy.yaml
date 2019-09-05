@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-fluentd-deployment
+  labels:
+{{ include "camp-dns-efk.labels" . | indent 4 }}
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2019-08-31T23:23:03Z"
+  generation: 1
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: fluentd
+{{ include "camp-dns-efk.labels" . | indent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: fluentd
+{{ include "camp-dns-efk.labels" . | indent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.fluentd.image.pullSecret }}
+      initContainers:
+        - name: wait-for-es
+          image: mi2428/wait-for-it:latest
+          args: ["-q", "-t", "0", "{{ .Release.Name }}-elasticsearch:9200", "--", "sleep", "10"]
+      containers:
+        - name: fluentd
+          image: {{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.tag }}
+          imagePullPolicy: {{ .Values.fluentd.image.pullPolicy }}
+          ports:
+            - name: syslog
+              containerPort: 5140
+              protocol: UDP
+            - name: heartbeat
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+            - name: fluentd-conf
+              mountPath: /fluentd/etc
+              readOnly: true
+      volumes:
+        - name: fluentd-conf
+          configMap:
+            name: {{ .Release.Name }}-fluentd-configmap

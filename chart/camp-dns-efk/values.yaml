@@ -1,0 +1,48 @@
+unbound:
+  image:
+    repository: 203.178.158.5:30500/wide-camp-1909/camp-dns-unbound
+    tag: latest
+    pullPolicy: IfNotPresent
+    pullSecret: camp-reg
+  replicaCountMin: 2
+  replicaCountMax: 9
+  averageUtilization: 50
+  listen:
+    - 203.178.158.32
+    - 203.178.158.33
+  allow:
+    - 127.0.0.0/8
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+    - 203.178.156.0/22
+
+rsyslogd:
+  server: 203.178.158.40
+
+elasticsearch:
+  image:
+    repository: elasticsearch
+    tag: "7.3.1"
+    pullPolicy: IfNotPresent
+  memory: 32g
+  persistence:
+    data:
+      size: 300Gi
+      storageClassName: rook-ceph-block-retain
+
+fluentd:
+  image:
+    repository: 203.178.158.5:30500/wide-camp-1909/camp-dns-fluentd
+    tag: "latest"
+    pullPolicy: IfNotPresent
+    pullSecret: camp-reg
+  listen: 203.178.158.40
+
+kibana:
+  image:
+    repository: kibana
+    tag: "7.3.1"
+    pullPolicy: IfNotPresent
+  listen: 203.178.158.41
+

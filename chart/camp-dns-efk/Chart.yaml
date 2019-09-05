@@ -1,0 +1,9 @@
+apiVersion: v1
+name: camp-dns-efk
+version: 1.0.0
+description: DNS cache server with query statistics visualization using EFK stack
+maintainers:
+  - name: mi2428
+    email: tmiya@protonmail.ch
+appVersion: "latest"
+deprecated: false

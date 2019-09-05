@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-esdata-pvc
+  labels:
+{{ include "camp-dns-efk.labels" . | indent 4 }}
+spec:
+  storageClassName: {{ .Values.elasticsearch.persistence.data.storageClassName }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.elasticsearch.persistence.data.size }}

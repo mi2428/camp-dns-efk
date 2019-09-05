@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-elasticsearch-deployment
+  labels:
+{{ include "camp-dns-efk.labels" . | indent 4 }}
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2019-08-31T23:23:03Z"
+  generation: 1
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: elasticsearch
+{{ include "camp-dns-efk.labels" . | indent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: elasticsearch
+{{ include "camp-dns-efk.labels" . | indent 8 }}
+    spec:
+      initContainers:
+        - name: change-pv-permission
+          image: {{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}
+          command: ["chown", "-R", "1000:1000", "/usr/share/elasticsearch/data"]
+          volumeMounts:
+            - name: esdata-pv
+              mountPath: /usr/share/elasticsearch/data
+      containers:
+        - name: elasticsearch
+          image: {{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}
+          imagePullPolicy: {{ .Values.elasticsearch.image.pullPolicy }}
+          env:
+            - name: ES_JAVA_OPTS
+              value: "-Xms{{ .Values.elasticsearch.memory }} -Xmx{{ .Values.elasticsearch.memory }}"
+            - name: bootstrap.memory_lock
+              value: "true"
+            - name: discovery.type
+              value: "single-node"
+            - name: indices.query.bool.max_clause_count
+              value: "8192"
+            - name: search.max_buckets
+              value: "100000"
+            - name: action.destructive_requires_name
+              value: "true"
+            - name: network.host
+              value: "0.0.0.0"
+            - name: http.port
+              value: "9200"
+          ports:
+            - name: elasticsearch
+              containerPort: 9200
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: 9200
+            initialDelaySeconds: 180
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: 9200
+            initialDelaySeconds: 180
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+            - name: esdata-pv
+              mountPath: /usr/share/elasticsearch/data
+      volumes:
+        - name: esdata-pv
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-esdata-pvc
+

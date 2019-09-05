@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-unbound-configmap
+  labels:
+{{ include "camp-dns-efk.labels" . | indent 4 }}
+  creationTimestamp: "2019-09-01T19:08:57Z"
+data:
+  unbound.conf: |-
+    server:
+      num-threads: 1
+      do-daemonize: no
+      do-ip6: no
+      interface: 0.0.0.0
+      port: 53
+
+      use-syslog: yes
+      log-time-ascii: no
+      log-queries: yes
+      log-replies: no
+      log-tag-queryreply: yes
+
+      use-caps-for-id: yes
+
+{{ range .Values.unbound.allow }}
+      access-control: {{ . }} allow
+{{ end }}
+      root-hints: root.hints
+
+      local-zone: "health.check.unbound." transparent
+      local-data: "health.check.unbound. 60 IN A 169.254.169.254"
+
+    remote-control:
+      control-enable: no
+
+  root.hints: |-
+    .                        3600000      NS    M.ROOT-SERVERS.NET.
+    M.ROOT-SERVERS.NET.      3600000      A     202.12.27.33
+    M.ROOT-SERVERS.NET.      3600000      AAAA  2001:dc3::35
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-rsyslogd-configmap
+  labels:
+{{ include "camp-dns-efk.labels" . | indent 4 }}
+data:
+  rsyslog.conf: |-
+    $ModLoad imuxsock
+    $OmitLocalLogging off
+    *.* @{{ .Values.rsyslogd.server }}:514
