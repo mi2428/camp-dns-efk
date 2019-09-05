@@ -50,4 +50,4 @@ data:
   rsyslog.conf: |-
     $ModLoad imuxsock
     $OmitLocalLogging off
-    *.* @{{ .Values.rsyslogd.server }}:514
+    *.* @{{ .Release.Name }}-fluentd:514

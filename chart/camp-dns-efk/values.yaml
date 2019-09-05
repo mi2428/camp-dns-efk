@@ -18,9 +18,6 @@ unbound:
     - 192.168.0.0/16
     - 203.178.156.0/22
 
-rsyslogd:
-  server: 203.178.158.40
-
 elasticsearch:
   image:
     repository: elasticsearch
