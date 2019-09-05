@@ -8,6 +8,15 @@ metadata:
     deployment.kubernetes.io/revision: "1"
   creationTimestamp: "2019-08-31T23:23:03Z"
   generation: 1
+
+<<: &healthcheck-template
+  httpGet:
+    path: /
+    port: heartbeat
+  initialDelaySeconds: 120
+  timeoutSeconds: 2
+  periodSeconds: 30
+
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -45,19 +54,11 @@ spec:
               containerPort: 8080
               protocol: TCP
           readinessProbe:
-            httpGet:
-              path: "/"
-              port: 8080
-            initialDelaySeconds: 120
-            timeoutSeconds: 2
+            <<: *healthcheck-template
             successThreshold: 1
             failureThreshold: 1
           livenessProbe:
-            httpGet:
-              path: "/"
-              port: 8080
-            initialDelaySeconds: 120
-            timeoutSeconds: 2
+            <<: *healthcheck-template
             successThreshold: 1
             failureThreshold: 3
           volumeMounts:

@@ -8,6 +8,15 @@ metadata:
     deployment.kubernetes.io/revision: "1"
   creationTimestamp: "2019-08-31T23:23:03Z"
   generation: 1
+
+<<: &healthcheck-template
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 10
+  timeoutSeconds: 2
+  periodSeconds: 2
+
 spec:
   replicas: {{ .Values.unbound.replicaCountInit }}
   revisionHistoryLimit: 10
@@ -30,6 +39,15 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.unbound.image.pullSecret }}
       containers:
+        - name: healthz
+          image: googlecontainer/exechealthz:1.2
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-cmd=nslookup health.check.unbound. 127.0.0.1:53 > /dev/null"
+          ports:
+            - name: healthz
+              containerPort: 8080
+              protocol: TCP
         - name: unbound
           image: {{ .Values.unbound.image.repository }}:{{ .Values.unbound.image.tag }}
           imagePullPolicy: {{ .Values.unbound.image.pullPolicy }}
@@ -44,23 +62,13 @@ spec:
             requests:
               cpu: "1000m"
           readinessProbe:
-            httpGet:
-              path: "/healthz"
-              port: 8080
-            initialDelaySeconds: 5
-            timeoutSeconds: 2
+            <<: *healthcheck-template
             successThreshold: 1
             failureThreshold: 1
-            periodSeconds: 10
           livenessProbe:
-            httpGet:
-              path: "/healthz"
-              port: 8080
-            initialDelaySeconds: 5
-            timeoutSeconds: 2
+            <<: *healthcheck-template
             successThreshold: 1
             failureThreshold: 3
-            periodSeconds: 10
           volumeMounts:
             - name: unbound-conf
               mountPath: "/opt/unbound/etc/unbound/"
@@ -68,15 +76,6 @@ spec:
             - name: rsyslogd-conf
               mountPath: "/opt/rsyslogd/etc/"
               readOnly: true
-        - name: healthz
-          image: googlecontainer/exechealthz:1.2
-          imagePullPolicy: IfNotPresent
-          args:
-            - "-cmd=nslookup health.check.unbound. 127.0.0.1:53 > /dev/null"
-          ports:
-            - name: healthz
-              containerPort: 8080
-              protocol: TCP
       volumes:
         - name: unbound-conf
           configMap:

@@ -8,6 +8,15 @@ metadata:
     deployment.kubernetes.io/revision: "1"
   creationTimestamp: "2019-08-31T23:23:03Z"
   generation: 1
+
+<<: &healthcheck-template
+  httpGet:
+    path: /
+    port: elasticsearch
+  initialDelaySeconds: 180
+  timeoutSeconds: 2
+  periodSeconds: 30
+
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -38,41 +47,19 @@ spec:
         - name: elasticsearch
           image: {{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}
           imagePullPolicy: {{ .Values.elasticsearch.image.pullPolicy }}
-          env:
-            - name: ES_JAVA_OPTS
-              value: "-Xms{{ .Values.elasticsearch.memory }} -Xmx{{ .Values.elasticsearch.memory }}"
-            - name: bootstrap.memory_lock
-              value: "true"
-            - name: discovery.type
-              value: "single-node"
-            - name: indices.query.bool.max_clause_count
-              value: "8192"
-            - name: search.max_buckets
-              value: "100000"
-            - name: action.destructive_requires_name
-              value: "true"
-            - name: network.host
-              value: "0.0.0.0"
-            - name: http.port
-              value: "9200"
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-elasticsearch-configmap
           ports:
             - name: elasticsearch
               containerPort: 9200
               protocol: TCP
           readinessProbe:
-            httpGet:
-              path: "/"
-              port: 9200
-            initialDelaySeconds: 180
-            timeoutSeconds: 2
+            <<: *healthcheck-template
             successThreshold: 1
             failureThreshold: 1
           livenessProbe:
-            httpGet:
-              path: "/"
-              port: 9200
-            initialDelaySeconds: 180
-            timeoutSeconds: 2
+            <<: *healthcheck-template
             successThreshold: 1
             failureThreshold: 3
           volumeMounts:

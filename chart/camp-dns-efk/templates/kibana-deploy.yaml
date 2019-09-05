@@ -8,6 +8,15 @@ metadata:
     deployment.kubernetes.io/revision: "1"
   creationTimestamp: "2019-08-31T23:23:03Z"
   generation: 1
+
+<<: &healthcheck-template
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 180
+  timeoutSeconds: 10
+  periodSeconds: 30
+
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -35,36 +44,18 @@ spec:
         - name: kibana
           image: {{ .Values.kibana.image.repository }}:{{ .Values.kibana.image.tag }}
           imagePullPolicy: {{ .Values.kibana.image.pullPolicy }}
-          env:
-            - name: ELASTICSEARCH_HOSTS
-              value: "http://{{ .Release.Name }}-elasticsearch:9200"
-            - name: SERVER_MAXPAYLOADBYTES
-              value: "4194304"
-            - name: LOGGING_DEST
-              value: "stdout"
-            - name: LOGGING_QUIET
-              value: "false"
-            - name: SERVER_HOST
-              value: "0.0.0.0"
-            - name: SERVER_PORT
-              value: "5601"
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-kibana-configmap
           ports:
             - name: http
               containerPort: 5601
               protocol: TCP
           readinessProbe:
-            httpGet:
-              path: "/"
-              port: 5601
-            initialDelaySeconds: 180
-            timeoutSeconds: 10
+            <<: *healthcheck-template
             successThreshold: 1
             failureThreshold: 1
           livenessProbe:
-            httpGet:
-              path: "/"
-              port: 5601
-            initialDelaySeconds: 180
-            timeoutSeconds: 10
+            <<: *healthcheck-template
             successThreshold: 1
             failureThreshold: 3

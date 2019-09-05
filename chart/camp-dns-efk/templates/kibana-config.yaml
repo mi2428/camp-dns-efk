@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-kibana-configmap
+  labels:
+{{ include "camp-dns-efk.labels" . | indent 4 }}
+  creationtimestamp: "2019-09-01t19:08:57z"
+data:
+  ELASTICSEARCH_HOSTS: "http://{{ .Release.Name }}-elasticsearch:9200"
+  SERVER_MAXPAYLOADBYTES: "4194304"
+  LOGGING_DEST: "stdout"
+  LOGGING_QUIET: "false"
+  SERVER_HOST: "0.0.0.0"
+  SERVER_PORT: "5601"
