@@ -1,0 +1,128 @@
+version: '3.7'
+
+x-healthcheck:
+  &default-healthcheck
+  interval: "5s"
+  timeout: "1s"
+  retries: 3
+  start_period: "20s"
+
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-unbound:
+  &unbound-template
+  image: wide-camp-1909/camp-dns-unbound:latest
+  build:
+    context: docker/unbound
+  restart: always
+  logging: *default-logging
+  healthcheck:
+    <<: *default-healthcheck
+    test: dig @127.0.0.1 +short health.check.unbound > /dev/null || exit 1
+  volumes:
+    - $PWD/docker/unbound/unbound.dev.conf:/opt/unbound/etc/unbound/unbound.conf:ro
+    - $PWD/docker/unbound/root.hints:/opt/unbound/etc/unbound/root.hints:ro
+    - $PWD/docker/unbound/rsyslog.dev.conf:/opt/rsyslogd/etc/rsyslog.conf:ro
+  labels:
+    jp.ad.wide.camp-dns-efk.description: "DNS cache server for IPv4 clients"
+
+services:
+  unbound-1:
+    <<: *unbound-template
+    hostname: unbound-1
+    ports:
+      # - "203.178.158.32:53:53/udp"
+      # - "203.178.158.32:53:53/tcp"
+      - "203.178.158.5:53:53/udp"
+      - "203.178.158.5:53:53/tcp"
+
+  unbound-2:
+    <<: *unbound-template
+    hostname: unbound-2
+    ports:
+      # - "203.178.158.33:53:53/udp"
+      # - "203.178.158.33:53:53/tcp"
+      - "203.178.156.2:53:53/udp"
+      - "203.178.156.2:53:53/tcp"
+
+  elasticsearch:
+    image: elasticsearch:7.3.1
+    restart: always
+    hostname: elasticsearch
+    expose:
+      - 9200
+    environment:
+      ES_JAVA_OPTS: "-Xms32g -Xmx32g"
+      bootstrap.memory_lock: "true"
+      discovery.type: "single-node"
+      indices.query.bool.max_clause_count: 8192
+      search.max_buckets: 100000
+      action.destructive_requires_name: "true"
+      network.host: 0.0.0.0
+      http.port: 9200
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    logging: *default-logging
+    healthcheck:
+      <<: *default-healthcheck
+      test: curl -I http://127.0.0.1:9200/ > /dev/null || exit 1
+      timeout: "10s"
+      start_period: "180s"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    labels:
+      jp.ad.wide.camp-dns-efk.description: "Indexing DNS query logs"
+
+  fluentd:
+    image: wide-camp-1909/camp-dns-fluentd:latest
+    restart: always
+    build:
+      context: docker/fluentd
+    ports:
+      # - "203.178.158.5:514:5140/udp"
+      - "514:5140/udp"
+    depends_on:
+      - elasticsearch
+    logging: *default-logging
+    healthcheck:
+      <<: *default-healthcheck
+      test: wget --spider http://127.0.0.1:8080/ > /dev/null || exit 1
+    volumes:
+      - $PWD/docker/fluentd/fluent.dev.conf:/fluentd/etc/fluent.conf:ro
+    labels:
+      jp.ad.wide.camp-dns-efk.description: "Filtering DNS query logs"
+
+  kibana:
+    image: kibana:7.3.1
+    restart: always
+    hostname: kibana
+    ports:
+      # - "203.178.158.41:5601:5601"
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+      SERVER_MAXPAYLOADBYTES: 4194304
+      LOGGING_DEST: stdout
+      LOGGING_QUIET: "false"
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 5601
+    depends_on:
+      - elasticsearch
+    logging: *default-logging
+    healthcheck:
+      <<: *default-healthcheck
+      test: curl -I http://127.0.0.1:5601/ > /dev/null || exit 1
+      timeout: "10s"
+      start_period: "120s"
+    labels:
+      jp.ad.wide.camp-dns-efk.description: "Visualize statistics of DNS usage"
+
+volumes:
+  es-data:
