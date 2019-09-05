@@ -4,6 +4,7 @@ unbound:
     tag: latest
     pullPolicy: IfNotPresent
     pullSecret: camp-reg
+  replicaCountInit: 3
   replicaCountMin: 2
   replicaCountMax: 9
   averageUtilization: 50

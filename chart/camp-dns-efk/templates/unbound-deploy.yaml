@@ -9,7 +9,7 @@ metadata:
   creationTimestamp: "2019-08-31T23:23:03Z"
   generation: 1
 spec:
-  replicas: {{ .Values.unbound.replicaCountMin }}
+  replicas: {{ .Values.unbound.replicaCountInit }}
   revisionHistoryLimit: 10
   selector:
     matchLabels:
