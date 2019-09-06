@@ -48,6 +48,9 @@ spec:
             - name: healthz
               containerPort: 8080
               protocol: TCP
+          resources:
+            requests:
+              cpu: "2m"
         - name: unbound
           image: {{ .Values.unbound.image.repository }}:{{ .Values.unbound.image.tag }}
           imagePullPolicy: {{ .Values.unbound.image.pullPolicy }}
@@ -60,7 +63,7 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: "1000m"
+              cpu: "900m"
           readinessProbe:
             <<: *healthcheck-template
             successThreshold: 1

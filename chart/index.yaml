@@ -3,9 +3,9 @@ entries:
   camp-dns-efk:
   - apiVersion: v1
     appVersion: latest
-    created: "2019-09-06T08:15:58.482621197+09:00"
+    created: "2019-09-06T08:58:29.35773665+09:00"
     description: DNS cache server with query statistics visualization using EFK stack
-    digest: 358d0b2ffc0bf9db40e524ced73a2dedbfafc6651f7c672582d1b09ca16ef216
+    digest: 5f146f8e90d4e35ca1fbea4baa729c797b432109d62ad870b226c2ca1305e2a4
     maintainers:
     - email: tmiya@protonmail.ch
       name: mi2428
@@ -13,4 +13,4 @@ entries:
     urls:
     - camp-dns-efk-1.0.0.tgz
     version: 1.0.0
-generated: "2019-09-06T08:15:58.481521183+09:00"
+generated: "2019-09-06T08:58:29.356622906+09:00"
