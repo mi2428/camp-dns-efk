@@ -89,7 +89,7 @@ If you did not set the Reclaim Policy of Persistent Volume as `Retain`, all data
 
 ## Configuration
 
-The following table lists the configurable parameters and their default value.
+The following table lists the configurable parameters and their default values.
 
 | Parameter 	| Description 	| Default (for wide-camp-1909)
 |:---- 	|:---- 	|:----
