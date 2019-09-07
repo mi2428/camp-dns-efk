@@ -117,6 +117,14 @@ The following table lists the configurable parameters and their default value.
 | `kibana.image.pullPolicy`    | Image pull policy | IfNotPresent
 | `kibana.listen`              | `kibana` service endpoint IP | 203.178.158.41
 
+## Known Issues
+
+Below are known issues of this project as of wide-camp-1909.
+
+### Source IP
+Currently, Kubernetes does not support [Source IP](https://kubernetes.io/docs/tutorials/services/source-ip/) with `externalTrafficPolicy: Local` when `externalIPs` are used.
+In short, the unbound Pods cannot get clients' source (global) addresses since they are behind NAT.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
