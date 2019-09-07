@@ -53,7 +53,7 @@ Install this repository on your Kubernetes environment:
 % helm repo add wide-camp https://wide-camp-1909.github.io/camp-dns-efk/chart
 ```
 
-If the above installation was successful, you can search and deploy package via:
+If the above installation was successful, you can search packages via:
 
 ```bash
 % helm repo list
@@ -89,7 +89,7 @@ If you did not set the Reclaim Policy of Persistent Volume as `Retain`, all data
 
 ## Configuration
 
-The following table lists the configurable parameters and their default value.
+The following table lists the configurable parameters and their default values.
 
 | Parameter 	| Description 	| Default (for wide-camp-1909)
 |:---- 	|:---- 	|:----
