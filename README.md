@@ -13,6 +13,8 @@
 - **Fluentd:** Filtering raw logs from DNS and passing them to ES
 - **Kibana:** Visualizing query statistics information
 
+[![screenshot](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari.png)](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari.png)
+
 ## Getting Started
 
 These instructions will get you a copy of this project up and running on your **Kubernentes environment for production purpose**.
