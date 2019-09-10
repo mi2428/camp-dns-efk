@@ -13,7 +13,7 @@
 - **Fluentd:** Filtering raw logs from DNS and passing them to ES
 - **Kibana:** Visualizing query statistics information
 
-[![screenshot](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari.png)](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari.png)
+[![screenshot](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari2.png)](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari2.png)
 
 ## Getting Started
 
@@ -79,6 +79,8 @@ Check the release status with:
 ```
 
 Open your favorite browser and go [http://203.178.158.41:5601/](http://203.178.158.41:5601/) to see Kibana dashboard.
+
+[![screenshot](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari1.png)](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari1.png)
 
 ### Delete
 
