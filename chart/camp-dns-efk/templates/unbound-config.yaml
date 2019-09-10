@@ -30,6 +30,9 @@ data:
       local-zone: "health.check.unbound." transparent
       local-data: "health.check.unbound. 60 IN A 169.254.169.254"
 
+      local-zone: "camp.sindan-net.com." transparent
+      local-data: "camp.sindan-net.com. 60 IN A 203.178.158.44"
+
     remote-control:
       control-enable: no
 
