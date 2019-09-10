@@ -41,6 +41,10 @@ A distributed storage platform [Ceph](https://github.com/ceph/ceph) managed by [
 
 **CAUTION:** You *should not* create PV from NFS. Running Elasticsearch on NFS is not supported officially and known to be problematic, also performance will be very low. If you really need to use NFS, `no_root_squash` option *must* be available and enabled at NFS server, or Elasticsearch *cannot run due to the permission problem*. (See: [wide-camp-1909/sandbox](https://github.com/wide-camp-1909/sandbox))
 
+It is desirable that either public or private Docker registry is available for image pulling.
+If not, you have to run `docker build` command at each of the Kubernetes worker nodes.
+(Building private registry guide: [wide-camp-1909/sandbox](https://github.com/wide-camp-1909/sandbox))
+
 Finally, you may deploy [Kubernetes Metrics Server](https://github.com/kubernetes-incubator/metrics-server) in namespace `kube-system`.
 If there is no metrics-server available on your Kubernetes cluster, Horizontal Pod Autoscaling of unbound DNS will not work.
 (Check and follow the instructions: [wide-camp-1909/metrics-server](https://github.com/wide-camp-1909/metrics-server))
@@ -53,7 +57,7 @@ Install this repository on your Kubernetes environment:
 % helm repo add wide-camp https://wide-camp-1909.github.io/camp-dns-efk/chart
 ```
 
-If the above installation was successful, you can search and deploy package via:
+If the above installation was successful, you can search packages via:
 
 ```bash
 % helm repo list
