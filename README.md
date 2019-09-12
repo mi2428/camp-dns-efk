@@ -29,14 +29,14 @@ If you want to use this for development or testing, you should try using docker-
 
 ### Prerequisites
 
-At least 10 CPU cores, 32GB of RAM, and **300GB of storage** are required for physical or virtual server hardware.
+At least 10 CPU cores, 8GB of RAM, and **32GB of storage** are required for physical or virtual server hardware.
 Kubernetes ecosystem on it should be:
 
 - docker-engine: 18.06.0 and higher
 - Kubernetes: 1.15.0 and higher
 - Helm: 2.14.3 and higher
 
-Also you need to prepare the Persistent Volume Storage for Elasticsearch (this must be larger than 300GB).
+Also you need to prepare the Persistent Volume Storage for Elasticsearch (this must be larger than 32GB).
 A distributed storage platform [Ceph](https://github.com/ceph/ceph) managed by [Rook](https://github.com/rook/rook) which is one of the cloud-native storage orchestrators is well-known design for this kind of situation.
 
 **CAUTION:** You *should not* create PV from NFS. Running Elasticsearch on NFS is not supported officially and known to be problematic, also performance will be very low. If you really need to use NFS, `no_root_squash` option *must* be available and enabled at NFS server, or Elasticsearch *cannot run due to the permission problem*. (See: [wide-camp-1909/sandbox](https://github.com/wide-camp-1909/sandbox))
