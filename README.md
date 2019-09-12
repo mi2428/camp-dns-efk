@@ -79,6 +79,7 @@ Check the release status with:
 ```
 
 Open your favorite browser and go [http://203.178.158.41:5601/](http://203.178.158.41:5601/) to see Kibana dashboard.
+You can setup dashboard quickly by uploading `kibana-dashboard.json` via [Import Dashboard API](https://www.elastic.co/guide/en/kibana/current/dashboard-import-api-import.html).
 
 [![screenshot](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari1.png)](https://raw.githubusercontent.com/wide-camp-1909/camp-dns-efk/screenshot/safari1.png)
 
